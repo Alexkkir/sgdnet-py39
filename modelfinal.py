@@ -7,44 +7,44 @@ from tensorflow.keras.layers import Dropout, Activation, Dense
 from tensorflow.keras.layers import Input, multiply
 from tensorflow.keras.layers import Convolution2D, MaxPooling2D
 from tensorflow.keras.layers import BatchNormalization
-#from keras.layers import Conv2D, Concatenate, MaxPooling2D
-#from keras.layers.convolutional import AtrousConvolution2D
+# from keras.layers import Conv2D, Concatenate, MaxPooling2D
+# from keras.layers.convolutional import AtrousConvolution2D
 from tensorflow.keras.utils import get_file
 
-#from keras.regularizers import l2
+# from keras.regularizers import l2
 import tensorflow.keras.backend as K
-#import theano.tensor as T
-#from PCreshape import PCreshape
-#from keras.applications.inception_v3 import InceptionV3, conv2d_bn
+# import theano.tensor as T
+# from PCreshape import PCreshape
+# from keras.applications.inception_v3 import InceptionV3, conv2d_bn
 
 import scipy.io
 import scipy.ndimage
-#import h5py
-#from eltwise_product import EltWiseProduct
-#from config2 import *
-#from subpixel import PS
+# import h5py
+# from eltwise_product import EltWiseProduct
+# from config2 import *
+# from subpixel import PS
 import tensorflow as tf
 import numpy as np
 from keras import applications
 
 TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 WEIGHTS_PATH_NO_TOP2 = ('https://github.com/fchollet/deep-learning-models/'
-                       'releases/download/v0.2/'
-                       'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5')
+                        'releases/download/v0.2/'
+                        'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
 
 def TVdist(y_true, y_pred, eps=K.epsilon()):
-        P = y_true
-#        print P.shape 
-        P = P / (K.epsilon() + K.sum(P, axis=[1, 2, 3], keepdims=True))
-#        print P.shape 
-        Q = y_pred
-        Q = Q / (K.epsilon() + K.sum(Q, axis=[1, 2, 3], keepdims=True))
+    P = y_true
+#        print P.shape
+    P = P / (K.epsilon() + K.sum(P, axis=[1, 2, 3], keepdims=True))
+#        print P.shape
+    Q = y_pred
+    Q = Q / (K.epsilon() + K.sum(Q, axis=[1, 2, 3], keepdims=True))
 
-        TVdist = K.sum( K.abs(P - Q) , axis=[1, 2, 3])
-#        print kld.shape     
-        # return kld*0.5
-        return TVdist*0.5
-
+    TVdist = K.sum(K.abs(P - Q), axis=[1, 2, 3])
+#        print kld.shape
+    # return kld*0.5
+    return TVdist*0.5
 
 
 class BatchNorm(BatchNormalization):
@@ -54,6 +54,7 @@ class BatchNorm(BatchNormalization):
     so this layer is often frozen (via setting in Config class) and functions
     as linear layer.
     """
+
     def call(self, inputs, training=None):
         """
         Note about training values:
@@ -64,8 +65,7 @@ class BatchNorm(BatchNormalization):
         return super(self.__class__, self).call(inputs, training=training)
 
 
-
-def identity_block(input_tensor, kernel_size, filters, stage, block,use_bias=True,dilation_rate=(1, 1), train_bn=None):
+def identity_block(input_tensor, kernel_size, filters, stage, block, use_bias=True, dilation_rate=(1, 1), train_bn=None):
     """The identity block is the block that has no conv layer at shortcut.
     # Arguments
         input_tensor: input tensor
@@ -84,16 +84,18 @@ def identity_block(input_tensor, kernel_size, filters, stage, block,use_bias=Tru
     conv_name_base = 'res' + str(stage) + block + '_branch'
     bn_name_base = 'bn' + str(stage) + block + '_branch'
 
-    x = Conv2D(filters1, (1, 1), use_bias=use_bias, name=conv_name_base + '2a')(input_tensor)
+    x = Conv2D(filters1, (1, 1), use_bias=use_bias,
+               name=conv_name_base + '2a')(input_tensor)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2a')(x, training=train_bn)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters2, kernel_size,dilation_rate=dilation_rate,
-               padding='same',use_bias=use_bias,  name=conv_name_base + '2b')(x)
+    x = Conv2D(filters2, kernel_size, dilation_rate=dilation_rate,
+               padding='same', use_bias=use_bias,  name=conv_name_base + '2b')(x)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2b')(x, training=train_bn)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters3, (1, 1),use_bias=use_bias,  name=conv_name_base + '2c')(x)
+    x = Conv2D(filters3, (1, 1), use_bias=use_bias,
+               name=conv_name_base + '2c')(x)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2c')(x, training=train_bn)
 
     x = layers.add([x, input_tensor])
@@ -101,7 +103,7 @@ def identity_block(input_tensor, kernel_size, filters, stage, block,use_bias=Tru
     return x
 
 
-def conv_block(input_tensor, kernel_size, filters, stage, block,use_bias=True, strides=(2, 2),dilation_rate=(1, 1), train_bn=None):
+def conv_block(input_tensor, kernel_size, filters, stage, block, use_bias=True, strides=(2, 2), dilation_rate=(1, 1), train_bn=None):
     """A block that has a conv layer at shortcut.
     # Arguments
         input_tensor: input tensor
@@ -122,29 +124,32 @@ def conv_block(input_tensor, kernel_size, filters, stage, block,use_bias=True, s
     conv_name_base = 'res' + str(stage) + block + '_branch'
     bn_name_base = 'bn' + str(stage) + block + '_branch'
 
-    x = Conv2D(filters1, (1, 1), strides=strides,use_bias=use_bias, 
+    x = Conv2D(filters1, (1, 1), strides=strides, use_bias=use_bias,
                name=conv_name_base + '2a')(input_tensor)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2a')(x, training=train_bn)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters2, kernel_size, dilation_rate=dilation_rate, padding='same',use_bias=use_bias, 
+    x = Conv2D(filters2, kernel_size, dilation_rate=dilation_rate, padding='same', use_bias=use_bias,
                name=conv_name_base + '2b')(x)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2b')(x, training=train_bn)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters3, (1, 1), use_bias=use_bias, name=conv_name_base + '2c')(x)
-    #x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
+    x = Conv2D(filters3, (1, 1), use_bias=use_bias,
+               name=conv_name_base + '2c')(x)
+    # x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
     x = BatchNorm(axis=bn_axis, name=bn_name_base + '2c')(x, training=train_bn)
-    shortcut = Conv2D(filters3, (1, 1), strides=strides,use_bias=use_bias, 
+    shortcut = Conv2D(filters3, (1, 1), strides=strides, use_bias=use_bias,
                       name=conv_name_base + '1')(input_tensor)
-    shortcut = BatchNorm(axis=bn_axis, name=bn_name_base + '1')(shortcut, training=train_bn)
+    shortcut = BatchNorm(axis=bn_axis, name=bn_name_base +
+                         '1')(shortcut, training=train_bn)
 
     x = layers.add([x, shortcut])
     x = Activation('relu')(x)
     return x
 
+
 def kerasResnet(input_tensor=None, train_bn=None):
-    input_shape = (None, None,3)
+    input_shape = (None, None, 3)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -153,7 +158,7 @@ def kerasResnet(input_tensor=None, train_bn=None):
             img_input = Input(tensor=input_tensor)
         else:
             img_input = input_tensor
-    bn_axis= -1
+    bn_axis = -1
     x = layers.ZeroPadding2D(padding=(3, 3), name='conv1_pad')(img_input)
     x = layers.Conv2D(64, (7, 7),
                       strides=(2, 2),
@@ -189,13 +194,14 @@ def kerasResnet(input_tensor=None, train_bn=None):
 
     # Load weights
     weights_path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5',  WEIGHTS_PATH_NO_TOP2,
-                           cache_subdir='models',md5_hash='a268eb855778b3df3c7506639542a6af')
+                            cache_subdir='models', md5_hash='a268eb855778b3df3c7506639542a6af')
     model.load_weights(weights_path)
 
     return model
 
+
 def M_VGG16(input_tensor=None):
-    input_shape = (None, None,3)
+    input_shape = (None, None, 3)
 
     if input_tensor is None:
         img_input = Input(shape=input_shape)
@@ -206,69 +212,82 @@ def M_VGG16(input_tensor=None):
             img_input = input_tensor
 
 #    channel_axis = -1
-    
-    conv1_1 = Convolution2D(64, kernel_size=(3, 3), activation='relu', padding='same')(img_input)
-    conv1_2 = Convolution2D(64, kernel_size=(3, 3), activation='relu', padding='same')(conv1_1)
+
+    conv1_1 = Convolution2D(64, kernel_size=(
+        3, 3), activation='relu', padding='same')(img_input)
+    conv1_2 = Convolution2D(64, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv1_1)
     conv1_pool = MaxPooling2D((2, 2), strides=(2, 2))(conv1_2)
 
     # conv_2
-    conv2_1 = Convolution2D(128,kernel_size=(3, 3), activation='relu', padding='same')(conv1_pool)
-    conv2_2 = Convolution2D(128, kernel_size=(3, 3), activation='relu', padding='same')(conv2_1)
+    conv2_1 = Convolution2D(128, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv1_pool)
+    conv2_2 = Convolution2D(128, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv2_1)
     conv2_pool = MaxPooling2D((2, 2), strides=(2, 2))(conv2_2)
 
     # conv_3
-    conv3_1 = Convolution2D(256, kernel_size=(3, 3), activation='relu', padding='same')(conv2_pool)
-    conv3_2 = Convolution2D(256, kernel_size=(3, 3), activation='relu', padding='same')(conv3_1)
-    conv3_3 = Convolution2D(256, kernel_size=(3, 3), activation='relu', padding='same')(conv3_2)
+    conv3_1 = Convolution2D(256, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv2_pool)
+    conv3_2 = Convolution2D(256, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv3_1)
+    conv3_3 = Convolution2D(256, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv3_2)
     conv3_pool = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(conv3_3)
 
     # conv_4
-    conv4_1 = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same')(conv3_pool)
-    conv4_2 = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same')(conv4_1)
-    conv4_3 = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same')(conv4_2)
+    conv4_1 = Convolution2D(512, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv3_pool)
+    conv4_2 = Convolution2D(512, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv4_1)
+    conv4_3 = Convolution2D(512, kernel_size=(
+        3, 3), activation='relu', padding='same')(conv4_2)
     conv4_pool = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(conv4_3)
 
     # conv_5
-    conv5_1 = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same', dilation_rate=(1, 1))(conv4_pool)
-    conv5_2 = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same', dilation_rate=(1,1))(conv5_1)
-    x = Convolution2D(512, kernel_size=(3, 3), activation='relu', padding='same', dilation_rate=(1, 1))(conv5_2)
+    conv5_1 = Convolution2D(512, kernel_size=(
+        3, 3), activation='relu', padding='same', dilation_rate=(1, 1))(conv4_pool)
+    conv5_2 = Convolution2D(512, kernel_size=(
+        3, 3), activation='relu', padding='same', dilation_rate=(1, 1))(conv5_1)
+    x = Convolution2D(512, kernel_size=(3, 3), activation='relu',
+                      padding='same', dilation_rate=(1, 1))(conv5_2)
 #    concatenated = merge([conv3_pool, conv4_pool, conv5_3], mode='concat', concat_axis=1)
-    
+
     model = Model(img_input, x, name='M_VGG16')
 #    model1 = Model(inputs=[input_ml_net], outputs=[x])
-    
-    weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5', TF_WEIGHTS_PATH_NO_TOP, cache_subdir='models')
-    
-    
+
+    weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                            TF_WEIGHTS_PATH_NO_TOP, cache_subdir='models')
+
     model.load_weights(weights_path)
 
     return model
 
 
-def se_block(input_tensor, compress_rate = 16):
-    num_channels = int(input_tensor.shape[-1]) # Tensorflow backend
+def se_block(input_tensor, compress_rate=16):
+    num_channels = int(input_tensor.shape[-1])  # Tensorflow backend
     bottle_neck = int(num_channels//compress_rate)
- 
+
     se_branch = GlobalAveragePooling2D()(input_tensor)
     se_branch0 = Dense(bottle_neck, activation='relu')(se_branch)
     se_branch = Dense(num_channels, activation='sigmoid')(se_branch0)
- 
-    x = input_tensor 
+
+    x = input_tensor
     out = multiply([x, se_branch])
- 
-    return out,se_branch0
+
+    return out, se_branch0
 
 
-#model defination
+# model defination
 
 
-def SGDNet(basemodel = 'resnet', saliency = 'output', CA = True, img_rows=480, img_cols=640, fixed =False,out1dim=512,out2dim=512, train_bn=None):
-    inputimage = Input(shape=(img_rows, img_cols,3))
-    
+def SGDNet(basemodel='resnet', saliency='output', CA=True, img_rows=480, img_cols=640, fixed=False, out1dim=512, out2dim=512, train_bn=None):
+    inputimage = Input(shape=(img_rows, img_cols, 3))
+
 #    input_ml_net2 = Input(shape=(int(img_rows/8), int(img_cols/8),1))
     if basemodel == 'resnet':
         base_model = kerasResnet(input_tensor=inputimage, train_bn=None)
-    else: 
+    else:
         base_model = M_VGG16(input_tensor=inputimage)
 
     if fixed:
@@ -276,39 +295,40 @@ def SGDNet(basemodel = 'resnet', saliency = 'output', CA = True, img_rows=480, i
             layer.trainable = False
     x = base_model.output
 
-    fraw = Convolution2D(out1dim, kernel_size=(1, 1), activation='relu',padding='same',use_bias=False)(x)
+    fraw = Convolution2D(out1dim, kernel_size=(
+        1, 1), activation='relu', padding='same', use_bias=False)(x)
     if CA:
-        fca,_= se_block(fraw, compress_rate = 4)   #this is right
+        fca, _ = se_block(fraw, compress_rate=4)  # this is right
     else:
-        fca  = fraw     
-    #x = BatchNormalization(axis=-1, scale=False)(x)
+        fca = fraw
+    # x = BatchNormalization(axis=-1, scale=False)(x)
     if saliency == 'output':
-        sm = Convolution2D(1, kernel_size=(1, 1), activation='relu',padding='same',use_bias=False,name='saliency')(fraw)
-        fm=layers.multiply([fca,sm])
-    elif saliency == 'input': 
-        sm = Input(shape=(None, None ,1))
-        fm=layers.multiply([fca,sm])
+        sm = Convolution2D(1, kernel_size=(1, 1), activation='relu',
+                           padding='same', use_bias=False, name='saliency')(fraw)
+        fm = layers.multiply([fca, sm])
+    elif saliency == 'input':
+        sm = Input(shape=(None, None, 1))
+        fm = layers.multiply([fca, sm])
     else:
         fm = fca
 
-    fv= GlobalAveragePooling2D()(fm)
+    fv = GlobalAveragePooling2D()(fm)
 
     x = Dense(out2dim, activation='relu', name='fc1')(fv)
     x = Dropout(0.5)(x)
     x = Dense(out2dim, activation='relu', name='fc2')(x)
 #    x = Dropout(0.5)(x)
-    final_output= Dense(1,name='predictions')(x)
+    final_output = Dense(1, name='predictions')(x)
 #    , activation='softmax', name='predictions'
-#   
-#    
+#
+#
     if saliency == 'output':
-        model = Model(inputs=[inputimage], outputs=[final_output,sm])  
-    elif saliency == 'input': 
-        model = Model(inputs=[inputimage,sm], outputs=[final_output])  
-    else: 
+        model = Model(inputs=[inputimage], outputs=[final_output, sm])
+    elif saliency == 'input':
+        model = Model(inputs=[inputimage, sm], outputs=[final_output])
+    else:
         model = Model(inputs=[inputimage], outputs=[final_output])
     # for layer in model.layers:
     #     print(layer.name, layer.input_shape, layer.output_shape)
 
     return model
-
