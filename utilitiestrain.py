@@ -56,7 +56,6 @@ def preprocess_imagesandsaliencyforiqa(imgpaths1, simgpaths1, shape_r, shape_c, 
     # i=0
     # cv2.imread() loads images as BGR
     for patha, pathb in zip(imgpaths1, simgpaths1):
-        print(f"{patha=}")
         image = cv2.imread(patha[:], 1)
         image = preprocess_image(image)
         simage = cv2.imread(pathb[:], 0)

@@ -268,15 +268,15 @@ if __name__ == '__main__':
     if args.phase == 'train':
         if args.pretrained == True:
             print("Load weights SGDNet")
-            weight_file = '../checkpoint/' + \
+            weight_file = 'checkpoint/' + \
                 'saliencyoutput-alpha0.25-ss-Koniq10k-1024-EXP0-lr=0.0001-bs=19.33-0.1721-0.0817-0.1637-0.2054.pkl'
             model.load_weights(weight_file)
 
         nb_imgs_train = len(train_index)
         nb_imgs_val = len(val_index)
         print("Training SGDNet")
-        ensure_dir('../checkpoint/')
-        checkpointdir = '../checkpoint/' + 'saliency{}-alpha{}-{}-{}-{}-EXP{}-lr={}-bs={}'.format(args.saliency, str(
+        ensure_dir('checkpoint/')
+        checkpointdir = 'checkpoint/' + 'saliency{}-alpha{}-{}-{}-{}-EXP{}-lr={}-bs={}'.format(args.saliency, str(
             args.alpha), args.mostype, args.database, str(args.out2dim), args.exp_id, str(args.lr), str(args.batch_size))
         print(checkpointdir)
         reduce_lr = ReduceLROnPlateau(
@@ -307,7 +307,7 @@ if __name__ == '__main__':
         # path of output folder
         arg = 'saliencyoutput-alpha0.25-ss-Koniq10k-1024-EXP0-lr=0.0001-bs=19.33-0.1721-0.0817-0.1637-0.2054.pkl'
         print("Load weights SGDNet")
-        weight_file = '../checkpoint/' + arg
+        weight_file = 'checkpoint/' + arg
         model.load_weights(weight_file)
 
         output_folder = 'TestResults/'+arg + args.database + '/'
@@ -378,7 +378,7 @@ if __name__ == '__main__':
         # path of output folder
         arg = 'saliencyoutput-alpha0.25-ss-Koniq10k-1024-EXP0-lr=0.0001-bs=19.33-0.1721-0.0817-0.1637-0.2054.pkl'
         print("Load weights SGDNet")
-        weight_file = '../checkpoint/' + arg
+        weight_file = 'checkpoint/' + arg
         model.load_weights(weight_file)
 
         output_folder = 'TestResults/'+"CustomTest" + '/'
