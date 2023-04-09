@@ -292,7 +292,7 @@ if __name__ == '__main__':
                                     1*nb_imgs_val // 1),
                                 callbacks=[EarlyStopping(patience=50),
                                            ModelCheckpoint(
-                                               checkpointdir+'.{epoch:02d}-{val_loss:.4f}-{loss:.4f}-{val_predictions_loss:.4f}-{val_saliency_loss:.4f}.pkl', save_best_only=True),
+                                               checkpointdir+'-epoch={epoch:02d}-val_loss={val_loss:.4f}-loss={loss:.4f}-val_predictions_loss={val_predictions_loss:.4f}-val_saliency_loss={val_saliency_loss:.4f}.pkl', save_best_only=True),
                                            reduce_lr])
         else:
             model.fit_generator(generator=train_generator, epochs=args.epochs, steps_per_epoch=int(1 * nb_imgs_train // b_s),
@@ -300,7 +300,7 @@ if __name__ == '__main__':
                                     1*nb_imgs_val // 1),
                                 callbacks=[EarlyStopping(patience=30),
                                            ModelCheckpoint(
-                                               checkpointdir+'.{epoch:02d}-{val_loss:.4f}-{loss:.4f}.pkl', save_best_only=True),
+                                               checkpointdir+'-epoch={epoch:02d}-val_loss={val_loss:.4f}-loss={loss:.4f}.pkl', save_best_only=True),
                                            reduce_lr])
 
     elif args.phase == "test":
