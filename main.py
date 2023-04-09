@@ -91,14 +91,11 @@ def datasetgenerator(conf, log_dir, EXP_ID='0', mostype='ss'):
         outfile = open(testTfile, "w")
 
         if mostype == 'DMOS':
-            print(outfile, "\n".join(
-                str(Info['DMOS'][0, i]) for i in test_index))
+            print("\n".join(str(Info['DMOS'][0, i]) for i in test_index), file=outfile)
         elif mostype == 'NMOS':
-            print(outfile, "\n".join(
-                str(Info['NMOS'][0, i]) for i in test_index))
+            print("\n".join(str(Info['NMOS'][0, i]) for i in test_index), file=outfile)
         else:
-            print(outfile, "\n".join(
-                str(Info['subjective_scores'][0, i]) for i in test_index))
+            print("\n".join(str(Info['subjective_scores'][0, i]) for i in test_index), file=outfile)
         outfile.close()
     return train_index, val_index, test_index
 
@@ -225,6 +222,8 @@ if __name__ == '__main__':
                         help='use CA? (default: true')
     parser.add_argument('--alpha', default='0.25', type=float,
                         help='alpha for saliency loss (default: 0.25)')
+    parser.add_argument('--checkpoint', type=str,
+                        help='path for checkpoint (used for testing)')
 
     args = parser.parse_args()
 
@@ -305,12 +304,13 @@ if __name__ == '__main__':
 
     elif args.phase == "test":
         # path of output folder
-        arg = 'saliencyoutput-alpha0.25-ss-Koniq10k-1024-EXP0-lr=0.0001-bs=19.33-0.1721-0.0817-0.1637-0.2054.pkl'
         print("Load weights SGDNet")
-        weight_file = 'checkpoint/' + arg
+        weight_file = args.checkpoint
+        weights_name = weight_file.split('/')[-1]
+        print(f'{weight_file=}')
         model.load_weights(weight_file)
 
-        output_folder = 'TestResults/'+arg + args.database + '/'
+        output_folder = 'TestResults/' + weights_name + args.database + '/'
         if os.path.isdir(output_folder) is False:
             os.makedirs(output_folder)
 
@@ -338,7 +338,6 @@ if __name__ == '__main__':
             # print len(predictions)
 
             elapsed_time2 = time.time() - start_time
-            # print "test no. ", i
 
             ("total model testing time: ", elapsed_time2)
             results = []
@@ -357,12 +356,11 @@ if __name__ == '__main__':
         outfile.close()
 
         elapsed_time = time.time() - start_time0
-        # print "test no. ", i
         print("total testing time: ", elapsed_time)
 
         with open(output_folderfileavg) as f:
             content = f.readlines()
-        maps2 = [float(x.strip()) for x in content]
+        maps2 = [float(x.strip()) for x in content]  # results_avg
         f.close()
         testTfile = log_dir + args.exp_id + '.txt'
         with open(testTfile) as f:
@@ -370,9 +368,9 @@ if __name__ == '__main__':
         maps = [float(x.strip()) for x in content]
         f.close()
 
-        # srocc, krocc, plcc, rmse, mae = evaluationmetrics(maps,maps2)
-        # print("Testing Results  :SROCC: {:.4f} KROCC: {:.4f} PLCC: {:.4f} RMSE: {:.4f} MAE: {:.4f} "
-        #          .format(srocc, krocc, plcc, rmse, mae))
+        srocc, krocc, plcc, rmse, mae = evaluationmetrics(maps, maps2)
+        print("Testing Results  :SROCC: {:.4f} KROCC: {:.4f} PLCC: {:.4f} RMSE: {:.4f} MAE: {:.4f} "
+              .format(srocc, krocc, plcc, rmse, mae))
 
     elif args.phase == "custom_test":
         # path of output folder
